@@ -72,11 +72,13 @@ O arquivo `render.yaml` na raiz do projeto permite deploy de ambos os serviços 
    - **Build Command**: `npm ci && npm run build`
    - **Publish Directory**: `build`
 
-4. **Variáveis de Ambiente**:
+4. **Variáveis de Ambiente** (IMPORTANTE: Configure ANTES do primeiro build):
    ```
    REACT_APP_API_URL=https://backend-api.onrender.com/api
    REACT_APP_NODE_ENV=production
    ```
+   
+   ⚠️ **CRÍTICO**: A variável `REACT_APP_API_URL` DEVE ser configurada ANTES do primeiro build, pois ela é incorporada no código durante o build. Se você esquecer, precisará fazer um novo build após configurar.
 
 5. Clique em **Create Static Site**
 
@@ -84,13 +86,14 @@ O arquivo `render.yaml` na raiz do projeto permite deploy de ambos os serviços 
 
 ### Atualização da variável FRONTEND_URL no Backend
 
-Após criar o frontend, você receberá um URL como `https://frontend-react.onrender.com`.
+Após criar o frontend, você receberá um URL como `https://hoteltransilvania-1.onrender.com`.
 
 1. Volte nas configurações do backend
-2. Atualize a variável `FRONTEND_URL` para o URL do frontend:
+2. Atualize a variável `FRONTEND_URL` para o URL do frontend (sem trailing slash):
    ```
-   FRONTEND_URL=https://frontend-react.onrender.com
+   FRONTEND_URL=https://hoteltransilvania-1.onrender.com
    ```
+3. **Reinicie o serviço do backend** após atualizar a variável
 
 ### CORS
 
@@ -117,10 +120,16 @@ Após a configuração inicial, o Render fará deploy automaticamente sempre que
 - Confira os logs no Render Dashboard
 - Certifique-se que `npm start` está funcionando localmente
 
-### Frontend não se conecta ao backend
-- Verifique se `REACT_APP_API_URL` está correto
-- Certifique-se que o `FRONTEND_URL` no backend está correto
-- Verifique os logs do backend para erros de CORS
+### Frontend não se conecta ao backend (Erro 404 "Rota não encontrada")
+- **Verifique se `REACT_APP_API_URL` está configurado corretamente no Render**
+  - A URL deve ser: `https://backend-api.onrender.com/api` (substitua `backend-api` pelo nome do seu serviço)
+  - ⚠️ Se você configurou a variável DEPOIS do build, faça um novo build
+- **Certifique-se que o `FRONTEND_URL` no backend está correto**
+  - Deve ser exatamente: `https://hoteltransilvania-1.onrender.com` (sem trailing slash)
+  - Reinicie o backend após atualizar
+- **Verifique os logs do backend** para erros de CORS
+- **Abra o console do navegador** (F12) e verifique se há erros de CORS ou 404
+- **Teste a API diretamente**: Acesse `https://backend-api.onrender.com/health` no navegador
 
 ### Erro 500 no backend
 - Verifique as credenciais do Supabase

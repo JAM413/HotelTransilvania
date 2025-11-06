@@ -33,6 +33,11 @@ services:
     name: frontend-react
     buildCommand: cd frontend && npm ci && npm run build
     publishPath: frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        sync: false
+      - key: REACT_APP_NODE_ENV
+        value: production
     routes:
       - type: rewrite
         source: /*

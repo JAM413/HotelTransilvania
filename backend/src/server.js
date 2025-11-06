@@ -26,15 +26,56 @@ const limiter = rateLimit({
 });
 
 // Configurar CORS
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://hoteltransilvania-1.onrender.com',
+  'http://localhost:3000',
+  'http://localhost:3001'
+].filter(Boolean); // Remove valores undefined/null
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    // Log para debug
+    console.log('CORS - Origin recebida:', origin);
+    console.log('CORS - Origens permitidas:', allowedOrigins);
+    console.log('CORS - NODE_ENV:', process.env.NODE_ENV);
+    
+    // Permite requisições sem origem (mobile apps, Postman, etc) em desenvolvimento
+    if (!origin && process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    
+    // Se não houver origem (alguns navegadores ou requisições diretas)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    // Verifica se a origem está na lista de permitidas
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (!allowed) return false;
+      // Comparação exata ou se a origem começa com a URL permitida
+      return origin === allowed || origin.startsWith(allowed);
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.error('CORS bloqueado para origem:', origin);
+      callback(new Error('Não permitido pelo CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Type', 'Authorization']
 };
 
 // Middlewares globais
-app.use(helmet()); // Segurança
+// Configurar helmet para não bloquear CORS
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false
+})); // Segurança
 app.use(cors(corsOptions)); // CORS
 app.use(morgan('combined')); // Logs
 app.use(limiter); // Rate limiting
